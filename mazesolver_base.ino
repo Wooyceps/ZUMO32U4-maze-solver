@@ -19,6 +19,10 @@ char reversePath[100];
 uint8_t pathLength = 0;
 uint8_t reversePathLength = 0;
 
+unsigned long start;
+unsigned long time;
+unsigned long segmentTimes[100];
+
 void setup()
 {
   // Gra dźwięk na rozpoczęcie
@@ -53,7 +57,10 @@ void mazeSolve()
 
   while(1)
   {
+    start = millis();
     followSegment();  // Podążanie za linią
+    stop = millis() - start;
+    segmentTimes[pathLenght] = ;
     bool foundLeft, foundStraight, foundRight;
     driveToIntersectionCenter(&foundLeft, &foundStraight, &foundRight);  // Dojazd do centrum skrzyżowania
 
@@ -186,6 +193,23 @@ void simplifyPath()
   }
 
   pathLength -= 2;  // Aktualizuje długość ścieżki
+  //simplyfyLoops();
+}
+void simplyfyLoops(){
+  char lastThree[3];
+  for(int i=0; i<pathLenght; ++i){
+    if(i>1){
+      lastThree[0] = path[i-2]
+      lastThree[1] = path[i-1]
+      lastThree[2] = path[i]
+    }
+    else{
+      continue
+    }
+    if((lastThree[0]=='R')&&(lastThree[1]=='R')&&(lastThree[2]=='R')){
+      
+    }
+  }
 }
 void displayPath()
 {
