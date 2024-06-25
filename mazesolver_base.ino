@@ -19,6 +19,11 @@ char reversePath[100];
 uint8_t pathLength = 0;
 uint8_t reversePathLength = 0;
 
+unsigned long start;
+unsigned long segmentTime;
+unsigned long segmentTimes[100];
+unsigned long seg_time = 1300; // maksymalny czas na jeden segment
+
 void setup()
 {
   // Gra dźwięk na rozpoczęcie
@@ -32,8 +37,8 @@ void loop()
   computeReversePath();  // Oblicza odwróconą ścieżkę
   buttonA.waitForButton();  // Czeka na naciśnięcie przycisku A
   mazeFollowReversePath();  // Podąża za odwróconą ścieżką
-  buttonA.waitForButton();  // Czeka na naciśnięcie przycisku A
-  mazeFollowPath();  // Podąża za zarejestrowaną ścieżką
+  //buttonA.waitForButton();  // Czeka na naciśnięcie przycisku A
+  //mazeFollowPath();  // Podąża za zarejestrowaną ścieżką
 }
 
 char selectTurn(bool foundLeft, bool foundStraight, bool foundRight)
@@ -53,10 +58,12 @@ void mazeSolve()
 
   while(1)
   {
+    start = millis();
     followSegment();  // Podążanie za linią
+    segmentTime = millis() - start;
+    segmentTimes[pathLength] = segmentTime;
     bool foundLeft, foundStraight, foundRight;
     driveToIntersectionCenter(&foundLeft, &foundStraight, &foundRight);  // Dojazd do centrum skrzyżowania
-
     if(aboveDarkSpot())  // Sprawdza, czy jest nad ciemnym punktem (meta)
     {
       break;
@@ -78,11 +85,6 @@ void mazeSolve()
     pathLength++; // Obecna ilość podjętych decyzji na skrzyżowaniach
     simplifyPath();  // Upraszcza ścieżkę
     displayPath();  // Wyświetla ścieżkę na wyświetlaczu
-
-    if (pathLength == 2 && path[0] == 'B' && path[1] == 'B')
-    {
-      buzzer.playFromProgramSpace(PSTR("!<b4"));  // Gra dźwięk, gdy ścieżka to 'BB'
-    }
 
     turn(dir);  // Skręca w wybranym kierunku
   }
@@ -144,9 +146,10 @@ void computeReversePath()
 
 void simplifyPath()
 {
+  simplifyLoops();
   if(pathLength < 3 || path[pathLength - 2] != 'B')
   {
-    return;  // Jeśli ścieżka jest za krótka lub przedostatni element NIE jest 'B', nie upraszcza
+    return;
   }
 
   int16_t totalAngle = 0;
@@ -186,6 +189,101 @@ void simplifyPath()
   }
 
   pathLength -= 2;  // Aktualizuje długość ścieżki
+}
+void simplifyLoops()
+{
+  if(pathLength < 5)
+  {
+    return;  // Jeśli ścieżka jest za krótka lub przedostatni element NIE jest 'B', nie upraszcza
+  }
+  int16_t angle = 0;
+  if(((path[pathLength-2] == 'R')&&(path[pathLength-3] == 'R')&&(path[pathLength-4] == 'R')) && \
+    ((segmentTimes[pathLength-2] < seg_time)&&(segmentTimes[pathLength-3] < seg_time)&&(segmentTimes[pathLength-4] < seg_time)))
+  {
+    angle -= 270;
+    switch(path[pathLength - 5])  // Sumuje kąty skrętów
+    {
+    case 'L':
+      angle += 90;
+      break;
+    case 'R':
+      angle -= 90;
+      break;
+    case 'S':
+      angle -= 0;
+      break;
+    }
+    switch(path[pathLength - 1])  // Sumuje kąty skrętów
+    {
+    case 'L':
+      angle += 90;
+      break;
+    case 'R':
+      angle -= 90;
+      break;
+    case 'S':
+      angle -= 0;
+      break;
+    }
+    angle = abs(angle % 360);  // Normalizuje kąt do zakresu 0-359 stopni
+    switch(angle)  // Zastępuje trzy skręty jednym odpowiednim
+    {
+    case 0:
+      path[pathLength - 5] = 'S';
+      break;
+    case 90:
+      path[pathLength - 5] = 'L';
+      break;
+    case 180:
+      path[pathLength - 5] = 'B';
+      break;
+    case 270:
+      path[pathLength - 5] = 'R';
+      break;
+    }
+    pathLength -= 4;
+  }
+  angle = 0;
+  if(((path[pathLength-2] == 'L')&&(path[pathLength-3] == 'L')&&(path[pathLength-4] == 'L')) && \
+    ((segmentTimes[pathLength-2] < seg_time)&&(segmentTimes[pathLength-3] < seg_time)&&(segmentTimes[pathLength-4] < seg_time)))
+  {
+    angle += 270;
+    switch(path[pathLength - 5])  // Sumuje kąty skrętów
+    {
+    case 'L':
+      angle += 90;
+      break;
+    case 'R':
+      angle -= 90;
+      break;
+    }
+    switch(path[pathLength - 1])  // Sumuje kąty skrętów
+    {
+    case 'L':
+      angle += 90;
+      break;
+    case 'R':
+      angle -= 90;
+      break;
+    }
+    angle = abs(angle % 360);  // Normalizuje kąt do zakresu 0-359 stopni
+    switch(angle)  // Zastępuje trzy skręty jednym odpowiednim
+    {
+    case 0:
+      path[pathLength - 5] = 'S';
+      break;
+    case 90:
+      path[pathLength - 5] = 'L';
+      break;
+    case 180:
+      path[pathLength - 5] = 'B';
+      break;
+    case 270:
+      path[pathLength - 5] = 'R';
+      break;
+    }
+    pathLength -= 4;
+  }
 }
 void displayPath()
 {
