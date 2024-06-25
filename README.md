@@ -7,11 +7,7 @@ University project of *embeded systems* subject.
 - [Introduction](#introduction)
 - [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
 - [License](#license)
-- [Acknowledgements](#acknowledgements)
 
 ## Introduction
 
@@ -29,12 +25,11 @@ My work aims to explore and demonstrate the maze-solving potential of the Zumo32
 
 To run this project, download all files from this repository and place them in a directory named just like the **.ino** file.
  
-
-### Prerequisites
+## Prerequisites
 
 Make sure your Arduino enviroment has all of dependencies listed [here]((https://www.pololu.com/docs/0J63/5))
 
-### License
+## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
