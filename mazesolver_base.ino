@@ -22,6 +22,7 @@ uint8_t reversePathLength = 0;
 unsigned long start;
 unsigned long time;
 unsigned long segmentTimes[100];
+unsigned long seg_time = 1300; // maksymalny czas na jeden segment
 
 void setup()
 {
@@ -43,7 +44,7 @@ void loop()
 char selectTurn(bool foundLeft, bool foundStraight, bool foundRight)
 {
   // Wybiera kierunek na podstawie dostępnych opcji
-  if(foundLeft) { return 'L'; }  // W lewo
+  if(foundLeft&&(!((path[-3]='L')&&(path[-2]='L')&&(path[-1]='L')))) { return 'L'; }  // W lewo
   else if(foundStraight) { return 'S'; }  // Prosto
   else if(foundRight) { return 'R'; }  // W prawo
   else { return 'B'; }  // Powrót
@@ -59,11 +60,10 @@ void mazeSolve()
   {
     start = millis();
     followSegment();  // Podążanie za linią
-    stop = millis() - start;
-    segmentTimes[pathLenght] = ;
+    segmentTime = millis() - start;
+    segmentTimes[pathLenght] = segmentTime;
     bool foundLeft, foundStraight, foundRight;
     driveToIntersectionCenter(&foundLeft, &foundStraight, &foundRight);  // Dojazd do centrum skrzyżowania
-
     if(aboveDarkSpot())  // Sprawdza, czy jest nad ciemnym punktem (meta)
     {
       break;
@@ -85,11 +85,6 @@ void mazeSolve()
     pathLength++; // Obecna ilość podjętych decyzji na skrzyżowaniach
     simplifyPath();  // Upraszcza ścieżkę
     displayPath();  // Wyświetla ścieżkę na wyświetlaczu
-
-    if (pathLength == 2 && path[0] == 'B' && path[1] == 'B')
-    {
-      buzzer.playFromProgramSpace(PSTR("!<b4"));  // Gra dźwięk, gdy ścieżka to 'BB'
-    }
 
     turn(dir);  // Skręca w wybranym kierunku
   }
@@ -151,9 +146,16 @@ void computeReversePath()
 
 void simplifyPath()
 {
-  if(pathLength < 3 || path[pathLength - 2] != 'B')
+  if(pathLength < 3)
   {
     return;  // Jeśli ścieżka jest za krótka lub przedostatni element NIE jest 'B', nie upraszcza
+  }
+
+  
+
+  if(path[pathLenght - 2] != 'B')
+  {
+    return;
   }
 
   int16_t totalAngle = 0;
@@ -193,23 +195,6 @@ void simplifyPath()
   }
 
   pathLength -= 2;  // Aktualizuje długość ścieżki
-  //simplyfyLoops();
-}
-void simplyfyLoops(){
-  char lastThree[3];
-  for(int i=0; i<pathLenght; ++i){
-    if(i>1){
-      lastThree[0] = path[i-2]
-      lastThree[1] = path[i-1]
-      lastThree[2] = path[i]
-    }
-    else{
-      continue
-    }
-    if((lastThree[0]=='R')&&(lastThree[1]=='R')&&(lastThree[2]=='R')){
-      
-    }
-  }
 }
 void displayPath()
 {
