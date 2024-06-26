@@ -5,7 +5,6 @@
 Zumo32U4LCD display;
 Zumo32U4Buzzer buzzer;
 Zumo32U4ButtonA buttonA;
-Zumo32U4ButtonB buttonB;
 Zumo32U4Motors motors;
 Zumo32U4LineSensors lineSensors;
 Zumo32U4IMU imu;
@@ -22,12 +21,11 @@ uint8_t reversePathLength = 0;
 unsigned long start;
 unsigned long segmentTime;
 unsigned long segmentTimes[100];
-unsigned long seg_time = 1300; // maksymalny czas na jeden segment
+unsigned long seg_time = 1300; // maksymalny czas na jeden segment (okolo 1.3s)
 
 void setup()
 {
-  // Gra dźwięk na rozpoczęcie
-  buzzer.playFromProgramSpace(PSTR("!>g32>>c32"));
+  buzzer.playFromProgramSpace(PSTR("!>g32>>c32")); // Gra dźwięk na rozpoczęcie
   gridMovementSetup();  // Inicjalizacja ruchu po siatce - głównie kalibracja potrzebnych podzespołów
   mazeSolve();  // Rozwiązywanie labiryntu
 }
@@ -37,13 +35,11 @@ void loop()
   computeReversePath();  // Oblicza odwróconą ścieżkę
   buttonA.waitForButton();  // Czeka na naciśnięcie przycisku A
   mazeFollowReversePath();  // Podąża za odwróconą ścieżką
-  //buttonA.waitForButton();  // Czeka na naciśnięcie przycisku A
   //mazeFollowPath();  // Podąża za zarejestrowaną ścieżką
 }
 
 char selectTurn(bool foundLeft, bool foundStraight, bool foundRight)
 {
-  // Wybiera kierunek na podstawie dostępnych opcji
   if(foundLeft) { return 'L'; }  // W lewo
   else if(foundStraight) { return 'S'; }  // Prosto
   else if(foundRight) { return 'R'; }  // W prawo
@@ -225,7 +221,7 @@ void simplifyLoops()
       angle -= 0;
       break;
     }
-    angle = abs(angle % 360);  // Normalizuje kąt do zakresu 0-359 stopni
+    angle = angle % 360;  // Normalizuje kąt do zakresu 0-359 stopni
     switch(angle)  // Zastępuje trzy skręty jednym odpowiednim
     {
     case 0:
@@ -239,6 +235,15 @@ void simplifyLoops()
       break;
     case 270:
       path[pathLength - 5] = 'R';
+      break;
+    case -90:
+      path[pathLength - 5] = 'R';
+      break;
+    case -180:
+      path[pathLength - 5] = 'B';
+      break;
+    case -270:
+      path[pathLength - 5] = 'L';
       break;
     }
     pathLength -= 4;
@@ -266,7 +271,7 @@ void simplifyLoops()
       angle -= 90;
       break;
     }
-    angle = abs(angle % 360);  // Normalizuje kąt do zakresu 0-359 stopni
+    angle = angle % 360;  // Normalizuje kąt do zakresu 0-359 stopni
     switch(angle)  // Zastępuje trzy skręty jednym odpowiednim
     {
     case 0:
@@ -280,6 +285,15 @@ void simplifyLoops()
       break;
     case 270:
       path[pathLength - 5] = 'R';
+      break;
+    case -90:
+      path[pathLength - 5] = 'R';
+      break;
+    case -180:
+      path[pathLength - 5] = 'B';
+      break;
+    case -270:
+      path[pathLength - 5] = 'L';
       break;
     }
     pathLength -= 4;
